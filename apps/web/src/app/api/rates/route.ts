@@ -13,7 +13,7 @@ export async function GET() {
       });
     }
 
-    const ids = [...new Set(SUPPORTED_COINS.map((c) => c.coingeckoId))].join(',');
+    const ids = Array.from(new Set(SUPPORTED_COINS.map((c) => c.coingeckoId))).join(',');
     const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
     const res = await fetch(url, { next: { revalidate: 0 } });
 
