@@ -12,7 +12,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { fetchMerchant, fetchPayments, fetchDevices } = useMerchantStore();
   const router = useRouter();
 
-  useEffect(() => { init(); }, []);
+  useEffect(() => { init(); }, [init]);
 
   useEffect(() => {
     if (!initialized) return;
@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     fetchMerchant(user.uid);
     fetchPayments(user.uid);
     fetchDevices(user.uid);
-  }, [user, initialized]);
+  }, [user, initialized, router, fetchMerchant, fetchPayments, fetchDevices]);
 
   if (!initialized) {
     return (

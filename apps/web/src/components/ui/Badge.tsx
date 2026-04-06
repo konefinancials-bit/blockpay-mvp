@@ -1,5 +1,3 @@
-import { clsx } from 'clsx';
-
 type Status = 'waiting' | 'confirming' | 'confirmed' | 'finished' | 'failed' | 'expired' | 'sending' | 'partially_paid';
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
@@ -16,12 +14,10 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 export function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] ?? { label: status, className: 'bg-gray-500/10 border-gray-500/30 text-gray-400' };
   return (
-    <span className={clsx('text-xs font-semibold px-2 py-0.5 rounded-full border', cfg.className)}>
+    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${cfg.className}`}>
       {cfg.label}
     </span>
   );
 }
 
-function clsx(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(' ');
-}
+

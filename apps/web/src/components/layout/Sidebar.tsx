@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, CreditCard, Nfc, BarChart3, Settings, LogOut, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMerchantStore } from '@/stores/merchant-store';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 
 const NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
