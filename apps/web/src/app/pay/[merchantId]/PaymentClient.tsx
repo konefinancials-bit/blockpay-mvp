@@ -259,7 +259,20 @@ export function PaymentClient({ merchant, merchantId, defaultAmount }: Props) {
               })}
             </div>
 
-            <div className="mt-4 flex items-center justify-center gap-1.5 text-[10px] text-bp-text-dim">
+            {/* Wallet download shortcuts */}
+            <div className="mt-4 pt-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+              <div className="text-[10px] mb-2 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>Don&apos;t have a crypto wallet? Get one free</div>
+              <div className="grid grid-cols-3 gap-2">
+                {[{name:'MetaMask',emoji:'🦊',url:'https://metamask.io/download/'},{name:'Phantom',emoji:'👻',url:'https://phantom.app/'},{name:'Coinbase',emoji:'🔵',url:'https://www.coinbase.com/wallet'}].map((w) => (
+                  <a key={w.name} href={w.url} target="_blank" rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-medium transition-all"
+                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }}>
+                    <span className="text-lg">{w.emoji}</span>{w.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
               <span>🔒</span>
               <span>Non-custodial · No personal info required · Powered by BlockPay</span>
             </div>

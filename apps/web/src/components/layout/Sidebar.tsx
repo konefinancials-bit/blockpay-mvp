@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CreditCard, Nfc, BarChart3, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, CreditCard, Nfc, BarChart3, Settings, LogOut, ChevronRight, Wallet } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMerchantStore } from '@/stores/merchant-store';
 import clsx from 'clsx';
@@ -12,6 +12,7 @@ const NAV = [
   { href: '/dashboard/payments', label: 'Payments', icon: CreditCard },
   { href: '/dashboard/devices', label: 'Devices', icon: Nfc },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/dashboard/wallet', label: 'Wallet & Cards', icon: Wallet },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];
 
