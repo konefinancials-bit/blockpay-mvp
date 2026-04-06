@@ -1,16 +1,15 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Nfc } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
   const { signIn, signInWithGoogle, loading, error } = useAuthStore();
   const router = useRouter();
 
@@ -24,54 +23,76 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bp-bg flex items-center justify-center p-6">
-      <div className="w-full max-w-sm">
-        <Link href="/" className="flex items-center gap-2 mb-8 justify-center">
-          <div className="size-8 rounded-lg bg-purple-gradient flex items-center justify-center">
-            <Nfc className="size-4 text-white" />
+    <div className="app-body">
+      {/* Nav */}
+      <nav className="app-nav">
+        <Link href="/" className="app-nav-logo">BlockPay</Link>
+        <ul className="app-nav-links">
+          <li><Link href="/#how">How it works</Link></li>
+          <li><Link href="/#devices">Hardware</Link></li>
+          <li><Link href="/#pricing">Pricing</Link></li>
+        </ul>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Link href="/auth/login" className="btn-app-ghost">Sign in</Link>
+          <Link href="/auth/signup" className="btn-app-solid">Get started</Link>
+        </div>
+      </nav>
+
+      <div className="page-body" style={{ maxWidth: 480 }}>
+        <div className="page-label">Account</div>
+        <h1 className="page-title">Sign in</h1>
+        <p className="page-sub">Welcome back. Enter your details to access your merchant dashboard.</p>
+
+        {error && (
+          <div style={{ marginBottom: 20, padding: '12px 16px', borderRadius: 8, background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontSize: 14 }}>{error}</div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Email address</label>
+            <input type="email" className="form-input" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
-          <span className="font-bold text-lg">BlockPay</span>
-        </Link>
-
-        <div className="card p-8">
-          <h1 className="text-2xl font-bold mb-2">Sign in</h1>
-          <p className="text-bp-text-sec text-sm mb-6">Access your merchant dashboard</p>
-
-          {error && <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">{error}</div>}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm text-bp-text-sec mb-1.5 font-medium">Email</label>
-              <input type="email" required placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-bp-bg border border-bp-border text-white placeholder-bp-text-dim focus:outline-none focus:border-bp-purple text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm text-bp-text-sec mb-1.5 font-medium">Password</label>
-              <input type="password" required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-bp-bg border border-bp-border text-white placeholder-bp-text-dim focus:outline-none focus:border-bp-purple text-sm" />
-            </div>
-            <button type="submit" disabled={loading}
-              className="w-full btn-primary py-3 rounded-xl text-sm font-semibold disabled:opacity-50">
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </form>
-
-          <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px bg-bp-border" />
-            <span className="text-xs text-bp-text-dim">or</span>
-            <div className="flex-1 h-px bg-bp-border" />
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input type="password" className="form-input" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
-
-          <button onClick={handleGoogle} disabled={loading}
-            className="w-full py-3 rounded-xl border border-bp-border hover:border-bp-purple/30 text-sm font-medium text-bp-text-sec hover:text-white transition-all disabled:opacity-50">
-            Continue with Google
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+            <label style={{ fontSize: 13, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer' }}>
+              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} style={{ accentColor: 'var(--text)' }} /> Remember me
+            </label>
+            <Link href="/auth/forgot" style={{ fontSize: 13, color: 'var(--green)', textDecoration: 'none' }}>Forgot password?</Link>
+          </div>
+          <button type="submit" className="btn-submit" disabled={loading} style={{ width: '100%' }}>
+            {loading ? 'Signing in…' : 'Sign in'}
           </button>
+        </form>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          <span style={{ fontSize: 12, color: 'var(--subtle)' }}>or</span>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         </div>
 
-        <p className="text-center text-bp-text-dim text-sm mt-4">
-          No account? <Link href="/auth/signup" className="text-bp-purple hover:underline">Sign up</Link>
+        <button onClick={handleGoogle} disabled={loading} style={{ width: '100%', padding: '13px 24px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: 'var(--muted)', fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', transition: 'all 0.15s' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text)'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#CCCCC6'; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}>
+          Continue with Google
+        </button>
+
+        <p style={{ marginTop: 24, fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>
+          Don&apos;t have an account?{' '}
+          <Link href="/auth/signup" style={{ color: 'var(--text)', fontWeight: 500, textDecoration: 'none' }}>Get started free</Link>
         </p>
       </div>
+
+      <footer className="app-footer">
+        <div className="app-footer-logo">BlockPay</div>
+        <div className="app-footer-links">
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
+        </div>
+        <span className="app-footer-copy">© 2026 BlockPay Inc.</span>
+      </footer>
     </div>
   );
 }

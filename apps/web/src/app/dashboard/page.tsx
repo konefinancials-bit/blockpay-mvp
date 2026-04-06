@@ -1,99 +1,92 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
 
 import { useMemo } from 'react';
-import { DollarSign, CreditCard, TrendingUp, Percent } from 'lucide-react';
-import { Topbar } from '@/components/layout/Topbar';
-import { StatsCard } from '@/components/dashboard/StatsCard';
-import { PaymentRow } from '@/components/dashboard/PaymentRow';
+import Link from 'next/link';
 import { useMerchantStore } from '@/stores/merchant-store';
-import { Card } from '@/components/ui/Card';
-import { Spinner } from '@/components/ui/Spinner';
 
 export default function DashboardPage() {
-  const { payments, paymentsLoading } = useMerchantStore();
+  const { merchant, payments, paymentsLoading } = useMerchantStore();
 
   const stats = useMemo(() => {
     const today = new Date().toDateString();
-    const todayPayments = payments.filter((p) => new Date(p.createdAt).toDateString() === today);
-    const todayVolume = todayPayments.filter((p) => ['confirmed', 'finished'].includes(p.status)).reduce((s, p) => s + p.priceAmount, 0);
-    const totalVolume = payments.filter((p) => ['confirmed', 'finished'].includes(p.status)).reduce((s, p) => s + p.priceAmount, 0);
-    const winCount = payments.filter((p) => ['confirmed', 'finished'].includes(p.status)).length;
-    const winRate = payments.length > 0 ? ((winCount / payments.length) * 100).toFixed(1) : '0';
-
-    // Coin breakdown
-    const coinMap: Record<string, number> = {};
-    payments.forEach((p) => { coinMap[p.payCurrency] = (coinMap[p.payCurrency] ?? 0) + 1; });
-    const topCoin = Object.entries(coinMap).sort((a, b) => b[1] - a[1])[0]?.[0]?.toUpperCase() ?? '—';
-
-    return { todayVolume, totalVolume, todayCount: todayPayments.length, winRate, topCoin };
+    const todayP = payments.filter((p) => new Date(p.createdAt).toDateString() === today);
+    const todayVol = todayP.filter((p) => ['confirmed','finished'].includes(p.status)).reduce((s, p) => s + p.priceAmount, 0);
+    const monthVol = payments.filter((p) => ['confirmed','finished'].includes(p.status)).reduce((s, p) => s + p.priceAmount, 0);
+    const coinSet = new Set(payments.map((p) => p.payCurrency.toUpperCase()));
+    return { todayVol, monthVol, todayCount: todayP.length, txTotal: payments.length, coins: coinSet.size };
   }, [payments]);
 
-  const recent = payments.slice(0, 8);
+  const recent = payments.slice(0, 5);
+
+  const STATUS_COLOR: Record<string, string> = {
+    confirmed: '#1A6644', finished: '#1A6644', waiting: '#92400E', confirming: '#1E40AF', failed: '#991B1B', expired: 'var(--subtle)',
+  };
 
   return (
-    <div>
-      <Topbar title="Dashboard" />
-      <div className="p-6 space-y-6 max-w-5xl mx-auto">
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatsCard label="Today's Volume" value={`$${stats.todayVolume.toFixed(2)}`} icon={DollarSign} iconColor="text-bp-green" />
-          <StatsCard label="Today's Payments" value={String(stats.todayCount)} icon={CreditCard} iconColor="text-bp-cyan" />
-          <StatsCard label="All-time Volume" value={`$${stats.totalVolume.toFixed(2)}`} icon={TrendingUp} iconColor="text-bp-purple" />
-          <StatsCard label="Conversion Rate" value={`${stats.winRate}%`} icon={Percent} iconColor="text-yellow-400" />
-        </div>
+    <div className="page-body" style={{ maxWidth: 900 }}>
+      <div className="page-label">Merchant Dashboard</div>
+      <h1 className="page-title">Welcome back{merchant?.displayName ? `, ${merchant.displayName.split(' ')[0]}` : ''}.</h1>
+      <p className="page-sub">
+        {payments.length === 0
+          ? "Your BlockPay dashboard is ready. Set up your wallet addresses and program your first NFC device to start accepting crypto."
+          : `You've processed ${payments.length} payment${payments.length !== 1 ? 's' : ''} through BlockPay.`}
+      </p>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Recent payments */}
-          <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold">Recent Payments</h2>
-              {paymentsLoading && <Spinner size={16} />}
-            </div>
-            {recent.length === 0 && !paymentsLoading ? (
-              <div className="text-center py-10 text-bp-text-dim text-sm">
-                No payments yet. Share your payment link or set up an NFC device.
-              </div>
-            ) : (
-              <div className="divide-y divide-bp-border/0">
-                {recent.map((p) => <PaymentRow key={p.id} payment={p} />)}
-              </div>
-            )}
-          </Card>
-
-          {/* Quick stats */}
-          <Card>
-            <h2 className="font-bold mb-4">Top Coins</h2>
-            {payments.length === 0 ? (
-              <p className="text-bp-text-dim text-sm">No data yet</p>
-            ) : (
-              <div className="space-y-3">
-                {Object.entries(
-                  payments.reduce<Record<string, { count: number; volume: number }>>((acc, p) => {
-                    const key = p.payCurrency.toUpperCase();
-                    if (!acc[key]) acc[key] = { count: 0, volume: 0 };
-                    acc[key].count++;
-                    acc[key].volume += p.priceAmount;
-                    return acc;
-                  }, {})
-                )
-                  .sort((a, b) => b[1].count - a[1].count)
-                  .slice(0, 5)
-                  .map(([coin, data]) => (
-                    <div key={coin} className="flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-semibold">{coin}</div>
-                        <div className="text-xs text-bp-text-dim">{data.count} payments</div>
-                      </div>
-                      <div className="text-sm font-bold text-bp-green">${data.volume.toFixed(2)}</div>
-                    </div>
-                  ))}
-              </div>
-            )}
-          </Card>
-        </div>
+      {/* Stats grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px,1fr))', gap: 16, marginBottom: 40 }}>
+        {[
+          { label: "Today's Revenue", val: `$${stats.todayVol.toFixed(2)}`, sub: `${stats.todayCount} payment${stats.todayCount !== 1 ? 's' : ''}`, subColor: stats.todayVol > 0 ? 'var(--green)' : 'var(--muted)' },
+          { label: "All-time Volume", val: `$${stats.monthVol.toFixed(2)}`, sub: 'Confirmed only', subColor: 'var(--muted)' },
+          { label: "Transactions", val: String(stats.txTotal), sub: `${stats.todayCount} today`, subColor: 'var(--muted)' },
+          { label: "Active Coins", val: String(stats.coins || '—'), sub: 'Accepted currencies', subColor: 'var(--muted)' },
+        ].map((s) => (
+          <div key={s.label} className="info-card">
+            <div className="info-card-label">{s.label}</div>
+            <div className="info-card-val">{s.val}</div>
+            <div className="info-card-sub" style={{ color: s.subColor }}>{s.sub}</div>
+          </div>
+        ))}
       </div>
+
+      <div style={{ height: 1, background: 'var(--border)', margin: '40px 0' }} />
+
+      {/* Recent payments */}
+      {recent.length > 0 && (
+        <>
+          <h2 style={{ fontFamily: 'var(--font-serif, Georgia, serif)', fontSize: 22, fontWeight: 400, letterSpacing: -0.5, marginBottom: 20 }}>Recent payments</h2>
+          <div style={{ border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', background: 'white', marginBottom: 32 }}>
+            {recent.map((p, i) => (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', padding: '16px 24px', borderBottom: i < recent.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font-mono, monospace)' }}>{p.orderId}</div>
+                  <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
+                    {new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', marginRight: 20 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500 }}>${p.priceAmount.toFixed(2)}</div>
+                  <div style={{ fontSize: 12, color: 'var(--muted)', fontFamily: 'var(--font-mono, monospace)' }}>{p.payCurrency.toUpperCase()}</div>
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 500, color: STATUS_COLOR[p.status] ?? 'var(--subtle)', background: STATUS_COLOR[p.status] ? STATUS_COLOR[p.status] + '12' : 'transparent', padding: '3px 10px', borderRadius: 100, border: `1px solid ${STATUS_COLOR[p.status] ?? 'var(--border)'}22` }}>
+                  {p.status}
+                </div>
+              </div>
+            ))}
+          </div>
+          <Link href="/dashboard/payments" style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500, textDecoration: 'none' }}>
+            View all payments →
+          </Link>
+        </>
+      )}
+
+      {payments.length === 0 && (
+        <p style={{ fontSize: 14, color: 'var(--muted)' }}>
+          This is your merchant dashboard.{' '}
+          <Link href="/dashboard/settings" style={{ color: 'var(--text)', fontWeight: 500 }}>Add your wallet addresses</Link>
+          {' '}to start accepting crypto payments.
+        </p>
+      )}
     </div>
   );
 }

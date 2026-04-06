@@ -4,31 +4,26 @@ export const dynamic = 'force-dynamic';
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Nfc, Check } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
-
-const PLAN_LABELS: Record<string, { name: string; price: string }> = {
-  starter: { name: 'Starter', price: '$29/mo' },
-  business: { name: 'Business', price: '$99/mo' },
-  whitelabel: { name: 'White-label', price: '$499/mo' },
-};
 
 function SignupForm() {
   const params = useSearchParams();
-  const [name, setName] = useState('');
+  const plan = params.get('plan') ?? 'starter';
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const { signUp, signInWithGoogle, loading, error } = useAuthStore();
   const router = useRouter();
 
-  const plan = params.get('plan') ?? 'starter';
-  const planLabel = PLAN_LABELS[plan] ?? PLAN_LABELS.starter;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreed) return;
     try {
-      await signUp(name, email, password, businessName);
+      await signUp(`${firstName} ${lastName}`.trim(), email, password, businessName);
       if (plan !== 'starter') {
         router.push(`/api/stripe/checkout?plan=${plan}`);
       } else {
@@ -42,90 +37,105 @@ function SignupForm() {
   };
 
   return (
-    <div className="w-full max-w-sm">
-      <Link href="/" className="flex items-center gap-2 mb-8 justify-center">
-        <div className="size-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}>
-          <Nfc className="size-4 text-white" />
+    <div className="app-body">
+      {/* Nav */}
+      <nav className="app-nav">
+        <Link href="/" className="app-nav-logo">BlockPay</Link>
+        <ul className="app-nav-links">
+          <li><Link href="/#how">How it works</Link></li>
+          <li><Link href="/#devices">Hardware</Link></li>
+          <li><Link href="/#pricing">Pricing</Link></li>
+        </ul>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Link href="/auth/login" className="btn-app-ghost">Sign in</Link>
+          <Link href="/auth/signup" className="btn-app-solid">Get started</Link>
         </div>
-        <span className="font-bold text-lg">BlockPay</span>
-      </Link>
+      </nav>
 
-      <div className="rounded-2xl p-8" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-bold">Create account</h1>
-          <span className="text-xs font-bold px-2 py-1 rounded-full capitalize"
-            style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#a78bfa' }}>
-            {planLabel.name}
-          </span>
-        </div>
-        <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.45)' }}>Start accepting crypto in minutes</p>
+      <div className="page-body" style={{ maxWidth: 520 }}>
+        <div className="page-label">Get started</div>
+        <h1 className="page-title">Create your account</h1>
+        <p className="page-sub">Start accepting crypto payments in minutes. No credit card required.</p>
 
         {error && (
-          <div className="mb-4 px-4 py-3 rounded-xl text-sm" style={{ background: 'rgba(255,82,82,0.1)', border: '1px solid rgba(255,82,82,0.3)', color: '#ff6b6b' }}>{error}</div>
+          <div style={{ marginBottom: 20, padding: '12px 16px', borderRadius: 8, background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontSize: 14 }}>{error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {[
-            { label: 'Your name', placeholder: 'Keilan Robinson', value: name, set: setName, type: 'text' },
-            { label: 'Business name', placeholder: 'Your Café', value: businessName, set: setBusinessName, type: 'text' },
-            { label: 'Email', placeholder: 'you@example.com', value: email, set: setEmail, type: 'email' },
-            { label: 'Password', placeholder: '••••••••', value: password, set: setPassword, type: 'password' },
-          ].map(({ label, placeholder, value, set, type }) => (
-            <div key={label}>
-              <label className="block text-sm mb-1.5 font-medium" style={{ color: 'rgba(255,255,255,0.55)' }}>{label}</label>
-              <input type={type} required placeholder={placeholder} value={value} onChange={(e) => set(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-colors"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
-                onFocus={(e) => (e.target.style.borderColor = 'rgba(124,58,237,0.5)')}
-                onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')} />
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div className="form-group">
+              <label className="form-label">First name</label>
+              <input type="text" className="form-input" placeholder="Keilan" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
             </div>
-          ))}
-          <button type="submit" disabled={loading}
-            className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50 hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', boxShadow: '0 0 20px rgba(124,58,237,0.3)' }}>
-            {loading ? 'Creating account...' : plan !== 'starter' ? `Continue to payment (${planLabel.price})` : 'Create free account'}
+            <div className="form-group">
+              <label className="form-label">Last name</label>
+              <input type="text" className="form-input" placeholder="Robinson" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+            </div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Business email</label>
+            <input type="email" className="form-input" placeholder="you@yourbusiness.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Business name</label>
+            <input type="text" className="form-input" placeholder="Acme Store" value={businessName} onChange={(e) => setBusinessName(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input type="password" className="form-input" placeholder="Min. 8 characters" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} required />
+          </div>
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ fontSize: 13, color: 'var(--muted)', display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', lineHeight: 1.5 }}>
+              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} style={{ accentColor: 'var(--text)', marginTop: 3 }} />
+              I agree to the{' '}
+              <Link href="/terms" style={{ color: 'var(--text)', textDecoration: 'none' }}>Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" style={{ color: 'var(--text)', textDecoration: 'none' }}>Privacy Policy</Link>
+            </label>
+          </div>
+          <button type="submit" className="btn-submit" disabled={loading || !agreed} style={{ width: '100%', opacity: (!agreed || loading) ? 0.5 : 1 }}>
+            {loading ? 'Creating account…' : 'Create free account'}
           </button>
         </form>
 
-        <div className="flex items-center gap-3 my-4">
-          <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>or</span>
-          <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          <span style={{ fontSize: 12, color: 'var(--subtle)' }}>or</span>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         </div>
 
-        <button onClick={handleGoogle} disabled={loading}
-          className="w-full py-3 rounded-xl text-sm font-medium transition-all hover:-translate-y-0.5 disabled:opacity-50"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.65)' }}>
+        <button onClick={handleGoogle} disabled={loading} style={{ width: '100%', padding: '13px 24px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: 'var(--muted)', fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', transition: 'all 0.15s' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text)'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#CCCCC6'; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}>
           Continue with Google
         </button>
 
-        <div className="mt-5 space-y-1.5">
-          {['Non-custodial payments', '14-day free trial', 'Cancel any time'].map((f) => (
-            <div key={f} className="flex items-center gap-2 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              <Check className="size-3 text-emerald-400" />{f}
-            </div>
-          ))}
-        </div>
+        <p style={{ marginTop: 24, fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>
+          Already have an account?{' '}
+          <Link href="/auth/login" style={{ color: 'var(--text)', fontWeight: 500, textDecoration: 'none' }}>Sign in</Link>
+        </p>
       </div>
 
-      <p className="text-center text-sm mt-4" style={{ color: 'rgba(255,255,255,0.3)' }}>
-        Already have an account?{' '}
-        <Link href="/auth/login" style={{ color: '#a78bfa' }} className="hover:underline">Sign in</Link>
-      </p>
+      <footer className="app-footer">
+        <div className="app-footer-logo">BlockPay</div>
+        <div className="app-footer-links">
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
+        </div>
+        <span className="app-footer-copy">© 2026 BlockPay Inc.</span>
+      </footer>
     </div>
   );
 }
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: '#060608' }}>
-      <Suspense fallback={
-        <div className="w-full max-w-sm flex items-center justify-center py-20">
-          <div className="size-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#7c3aed', borderTopColor: 'transparent' }} />
-        </div>
-      }>
-        <SignupForm />
-      </Suspense>
-    </div>
+    <Suspense fallback={
+      <div className="app-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div style={{ width: 24, height: 24, border: '2px solid var(--border)', borderTopColor: 'var(--text)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      </div>
+    }>
+      <SignupForm />
+    </Suspense>
   );
 }
