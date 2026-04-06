@@ -153,7 +153,7 @@ export default function LandingPage() {
             ) : (
               <div className="flex items-center gap-2 px-5 py-3.5 rounded-2xl text-[14px] font-medium w-full justify-center"
                 style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', color: '#34d399' }}>
-                <Check className="size-4" /> You're on the list. We'll reach out before launch.
+                <Check className="size-4" /> You&apos;re on the list. We&apos;ll reach out before launch.
               </div>
             )}
           </form>
@@ -448,7 +448,7 @@ export default function LandingPage() {
           <div className="size-16 rounded-full mx-auto mb-6 flex items-center justify-center text-[20px] font-black"
             style={{ background: 'rgba(124,58,237,0.15)', border: '1.5px solid rgba(124,58,237,0.3)', color: '#a78bfa' }}>KR</div>
           <blockquote className="text-[17px] font-medium leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            "I noticed how technology is advancing every industry, and I wanted to create something that has real value and will greatly impact the crypto market. The gap between crypto's potential and everyday merchant adoption is still massive — BlockPay is how we close it."
+            &ldquo;I noticed how technology is advancing every industry, and I wanted to create something that has real value and will greatly impact the crypto market. The gap between crypto&apos;s potential and everyday merchant adoption is still massive — BlockPay is how we close it.&rdquo;
           </blockquote>
           <div className="font-bold">Keilan Robinson</div>
           <div className="text-[13px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Founder & CEO · Age 22 · Tucker, GA · Self-employed since 18</div>

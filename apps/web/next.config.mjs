@@ -3,8 +3,10 @@ const nextConfig = {
   images: {
     domains: ['blockpay.live', 'firebasestorage.googleapis.com'],
   },
-  // Suppress firebase-admin warnings in edge/client bundles
-  serverExternalPackages: ['firebase-admin'],
+  // Suppress firebase-admin warnings in edge/client bundles (Next.js 14 API)
+  experimental: {
+    serverComponentsExternalPackages: ['firebase-admin'],
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Don't bundle server-only modules on the client
