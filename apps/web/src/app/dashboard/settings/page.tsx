@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState } from 'react';
 import { Check, Save } from 'lucide-react';
 import { Topbar } from '@/components/layout/Topbar';

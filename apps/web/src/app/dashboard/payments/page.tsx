@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useMemo } from 'react';
 import { Search, Filter } from 'lucide-react';
 import { Topbar } from '@/components/layout/Topbar';
